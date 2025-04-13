@@ -558,10 +558,41 @@ void ViewDialog::createDialogContent()
 	// allow to display short names and inhibit translation.
 	// TODO: Remove
 //	connectIntProperty(ui->skyCultureNamesStyleComboBox,		"ConstellationMgr.constellationDisplayStyle");
-	ui->skyCultureNamesStyleComboBox->hide();
-	ui->labelConstellationsNameStyle->hide();
+	//ui->skyCultureNamesStyleComboBox->hide();
+	//ui->labelConstellationsNameStyle->hide();
 	//connectCheckBox(ui->nativePlanetNamesCheckBox,			"actionShow_Skyculture_NativePlanetNames");
-	ui->nativePlanetNamesCheckBox->hide();
+	//ui->nativePlanetNamesCheckBox->hide();
+	ui->screenLabelComboBox->hide();
+	ui->infoLabelComboBox->hide();
+	ui->labelScreenLabel->hide();
+	ui->labelInfoLabel->hide();
+
+
+
+	configureSkyCultureCheckboxes();
+
+	connect(ui->infoLabelNativeCheckBox           , &QCheckBox::clicked, this, &ViewDialog::updateSkyCultureInfoStyleFromCheckboxes);
+	connect(ui->infoLabelPronounceCheckBox        , &QCheckBox::clicked, this, &ViewDialog::updateSkyCultureInfoStyleFromCheckboxes);
+	connect(ui->infoLabelTransliterationCheckBox  , &QCheckBox::clicked, this, &ViewDialog::updateSkyCultureInfoStyleFromCheckboxes);
+	connect(ui->infoLabelTranslationCheckBox      , &QCheckBox::clicked, this, &ViewDialog::updateSkyCultureInfoStyleFromCheckboxes);
+	connect(ui->infoLabelIPACheckBox              , &QCheckBox::clicked, this, &ViewDialog::updateSkyCultureInfoStyleFromCheckboxes);
+	connect(ui->infoLabelModernCheckBox           , &QCheckBox::clicked, this, &ViewDialog::updateSkyCultureInfoStyleFromCheckboxes);
+
+	connect(ui->screenLabelNativeCheckBox         , &QCheckBox::clicked, this, &ViewDialog::updateSkyCultureScreenStyleFromCheckboxes);
+	connect(ui->screenLabelPronounceCheckBox      , &QCheckBox::clicked, this, &ViewDialog::updateSkyCultureScreenStyleFromCheckboxes);
+	connect(ui->screenLabelTransliterationCheckBox, &QCheckBox::clicked, this, &ViewDialog::updateSkyCultureScreenStyleFromCheckboxes);
+	connect(ui->screenLabelTranslationCheckBox    , &QCheckBox::clicked, this, &ViewDialog::updateSkyCultureScreenStyleFromCheckboxes);
+	connect(ui->screenLabelIPACheckBox            , &QCheckBox::clicked, this, &ViewDialog::updateSkyCultureScreenStyleFromCheckboxes);
+	connect(ui->screenLabelModernCheckBox         , &QCheckBox::clicked, this, &ViewDialog::updateSkyCultureScreenStyleFromCheckboxes);
+
+	connectBoolProperty(ui->abbreviatedNamesCheckBox, "StelSkyCultureMgr.flagUseAbbreviatedNames");
+
+	//connect(scMgr, )
+
+
+
+
+
 
 	connectIntProperty(ui->screenLabelComboBox,		"StelSkyCultureMgr.screenLabelStyle");
 	connectIntProperty(ui->infoLabelComboBox,		"StelSkyCultureMgr.infoLabelStyle");
@@ -1113,7 +1144,7 @@ void ViewDialog::populateLists()
 //	cultureNamesStyleComboBox->blockSignals(false);
 
 	// This is too long, placed into own method
-	populateSkyCultureLabelStyleComboboxes();
+	//populateSkyCultureLabelStyleComboboxes();
 
 	const StelCore* core = app.getCore();
 	StelGui* gui = dynamic_cast<StelGui*>(app.getGui());
@@ -1167,6 +1198,56 @@ void ViewDialog::populateLists()
 	updateDefaultLandscape();
 }
 
+void ViewDialog::configureSkyCultureCheckboxes()
+{
+	static StelSkyCultureMgr *scMgr       = GETSTELMODULE(StelSkyCultureMgr);
+	StelObject::CulturalDisplayStyle infoStyle   = scMgr->getInfoLabelStyle();
+	StelObject::CulturalDisplayStyle screenStyle = scMgr->getScreenLabelStyle();
+
+	ui->infoLabelNativeCheckBox           ->setChecked(int(infoStyle)   & int(StelObject::CulturalDisplayStyle::Native));
+	ui->infoLabelPronounceCheckBox        ->setChecked(int(infoStyle)   & int(StelObject::CulturalDisplayStyle::Pronounce));
+	ui->infoLabelTransliterationCheckBox         ->setChecked(int(infoStyle)   & int(StelObject::CulturalDisplayStyle::Translit));
+	ui->infoLabelTranslationCheckBox      ->setChecked(int(infoStyle)   & int(StelObject::CulturalDisplayStyle::Translated));
+	ui->infoLabelIPACheckBox              ->setChecked(int(infoStyle)   & int(StelObject::CulturalDisplayStyle::IPA));
+	ui->infoLabelModernCheckBox           ->setChecked(int(infoStyle)   & int(StelObject::CulturalDisplayStyle::Modern));
+	ui->screenLabelNativeCheckBox         ->setChecked(int(screenStyle) & int(StelObject::CulturalDisplayStyle::Native));
+	ui->screenLabelPronounceCheckBox      ->setChecked(int(screenStyle) & int(StelObject::CulturalDisplayStyle::Pronounce));
+	ui->screenLabelTransliterationCheckBox->setChecked(int(screenStyle) & int(StelObject::CulturalDisplayStyle::Translit));
+	ui->screenLabelTranslationCheckBox    ->setChecked(int(screenStyle) & int(StelObject::CulturalDisplayStyle::Translated));
+	ui->screenLabelIPACheckBox            ->setChecked(int(screenStyle) & int(StelObject::CulturalDisplayStyle::IPA));
+	ui->screenLabelModernCheckBox         ->setChecked(int(screenStyle) & int(StelObject::CulturalDisplayStyle::Modern));
+}
+
+void ViewDialog::updateSkyCultureInfoStyleFromCheckboxes()
+{
+	static StelSkyCultureMgr *scMgr       = GETSTELMODULE(StelSkyCultureMgr);
+
+	scMgr->setInfoLabelStyle(static_cast<StelObject::CulturalDisplayStyle>(
+				int(ui->infoLabelNativeCheckBox     ->isChecked()) << 5 |
+				int(ui->infoLabelPronounceCheckBox  ->isChecked()) << 4 |
+				int(ui->infoLabelTransliterationCheckBox   ->isChecked()) << 3 |
+				int(ui->infoLabelTranslationCheckBox->isChecked()) << 2 |
+				int(ui->infoLabelIPACheckBox        ->isChecked()) << 1 |
+				int(ui->infoLabelModernCheckBox     ->isChecked())
+				));
+}
+
+void ViewDialog::updateSkyCultureScreenStyleFromCheckboxes()
+{
+	static StelSkyCultureMgr *scMgr       = GETSTELMODULE(StelSkyCultureMgr);
+
+	scMgr->setScreenLabelStyle(static_cast<StelObject::CulturalDisplayStyle>(
+				int(ui->screenLabelNativeCheckBox         ->isChecked()) << 5 |
+				int(ui->screenLabelPronounceCheckBox      ->isChecked()) << 4 |
+				int(ui->screenLabelTransliterationCheckBox->isChecked()) << 3 |
+				int(ui->screenLabelTranslationCheckBox    ->isChecked()) << 2 |
+				int(ui->screenLabelIPACheckBox            ->isChecked()) << 1 |
+				int(ui->screenLabelModernCheckBox         ->isChecked())
+				));
+}
+
+
+/*
 // populate label formatting combos. (taken from DeltaT combo)
 void ViewDialog::populateSkyCultureLabelStyleComboboxes()
 {
@@ -1175,7 +1256,7 @@ void ViewDialog::populateSkyCultureLabelStyleComboboxes()
 	Q_ASSERT(scMgr);
 	//StelModule* cmgr = app.getModule("ConstellationMgr");
 	//Q_ASSERT(cmgr);
-	Q_ASSERT(ui->skyCultureNamesStyleComboBox);
+	//Q_ASSERT(ui->skyCultureNamesStyleComboBox);
 	//QComboBox* cultureNamesStyleComboBox = ui->skyCultureNamesStyleComboBox;
 
 	QList<QComboBox *>comboBoxes={ui->screenLabelComboBox, ui->infoLabelComboBox};
@@ -1233,6 +1314,8 @@ void ViewDialog::populateSkyCultureLabelStyleComboboxes()
 	ui->infoLabelComboBox->setCurrentIndex(index);
 	ui->infoLabelComboBox->blockSignals(false);
 }
+*/
+
 
 void ViewDialog::skyCultureChanged()
 {
@@ -1240,6 +1323,7 @@ void ViewDialog::skyCultureChanged()
 	l->setCurrentItem(l->findItems(StelApp::getInstance().getSkyCultureMgr().getCurrentSkyCultureNameI18(), Qt::MatchExactly).at(0));
 	updateSkyCultureText();
 	updateDefaultSkyCulture();
+	configureSkyCultureCheckboxes();
 }
 
 // fill the description text window, not the names in the sky.
