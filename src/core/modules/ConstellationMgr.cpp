@@ -1441,12 +1441,10 @@ const QMap<QString, ConstellationMgr::ConstellationDisplayStyle>ConstellationMgr
 
 void ConstellationMgr::dumpHullAreas()
 {
-
 	foreach(const Constellation *constellation, constellations)
 	{
 		double area_sr=constellation->convexHull->getArea();
 		qInfo().nospace() << constellation->getEnglishName() << ": "
 				  <<  area_sr << "sr or " << area_sr*(M_180_PI*M_180_PI) << "°²";
 	}
-
 }

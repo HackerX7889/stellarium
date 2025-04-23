@@ -783,7 +783,7 @@ static double theta(const hullEntry &p1, const hullEntry &p2)
 	return t*M_PI_2;
 }
 
-SphericalRegionP StelSkyCultureMgr::makeConvexHull(const std::vector<StelObjectP> &starLines, const std::vector<StelObjectP> &hullExtension, const std::vector<Vec3d> &darkLines, const Vec3d projectionCenter)
+SphericalRegionP StelSkyCultureMgr::makeConvexHull(const std::vector<StelObjectP> &starLines, const std::vector<StelObjectP> &hullExtension, const std::vector<Vec3d> &darkLines, const Vec3d projectionCenter, const double hullRadius)
 {
 	static StelCore *core=StelApp::getInstance().getCore();
 	// 1. Project every first star of a line pair (or just coordinates from a dark constellation) into a 2D tangential plane around projectionCenter.
@@ -833,9 +833,22 @@ SphericalRegionP StelSkyCultureMgr::makeConvexHull(const std::vector<StelObjectP
 	//qDebug() << "Hull candidates: " << hullList.length();
 	if (hullList.count() < 3)
 	{
-		//qDebug() << "List length" << hullList.count() << " not enough for a convex hull... skipping";
-		EmptySphericalRegion *empty = new EmptySphericalRegion;
-		return empty;
+		//qDebug() << "List length" << hullList.count() << " not enough for a convex hull... create circular area";
+		SphericalRegionP res;
+		switch (hullList.count())
+		{
+			case 0:
+				res = new EmptySphericalRegion;
+				break;
+			case 1:
+				res = new SphericalCap(projectionCenter, cos(hullRadius*M_PI_180));
+				break;
+			case 2:
+				double halfDist=0.5*acos(hullList.at(0).obj->getJ2000EquatorialPos(core).dot(hullList.at(1).obj->getJ2000EquatorialPos(core)));
+				res = new SphericalCap(projectionCenter, cos(halfDist+hullRadius*M_PI_180));
+				break;
+		}
+		return res;
 	}
 
 	// 2. Apply Package Wrapping from Sedgewick 1990, Algorithms in C to find the outer points wrapping all points.
