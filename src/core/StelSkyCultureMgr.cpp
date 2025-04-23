@@ -915,7 +915,11 @@ SphericalRegionP StelSkyCultureMgr::makeConvexHull(const std::vector<StelObjectP
 	}
 	++M;
 	//qDebug() << "Hull length" << M << "of" << hullList.count();
+#if (QT_VERSION<QT_VERSION_CHECK(6,0,0))
+	for (int e=0; e<=N-M; ++e) hullList.pop_back();
+#else
 	hullList.remove(M, N-M);
+#endif
 	//hullList.remove(M-1, N-M+1);
 
 	//// DUMP HULL LINE
@@ -936,7 +940,11 @@ SphericalRegionP StelSkyCultureMgr::makeConvexHull(const std::vector<StelObjectP
 	}
 	// With perspective x inverted, we don't need to reverse.
 	//std::reverse(hullPoints.begin(), hullPoints.end());
+#if (QT_VERSION<QT_VERSION_CHECK(6,0,0))
+	SphericalPolygon *hull=new SphericalPolygon(hullPoints.toVector());
+#else
 	SphericalPolygon *hull=new SphericalPolygon(hullPoints);
+#endif
 	//qDebug() << "Successful hull:" << hull->toJSON();
 	return hull;
 }
