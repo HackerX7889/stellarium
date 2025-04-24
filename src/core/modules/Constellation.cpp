@@ -21,6 +21,8 @@
 #include "StelProjector.hpp"
 #include "Constellation.hpp"
 #include "StarMgr.hpp"
+#include "StelModuleMgr.hpp"
+#include "NebulaMgr.hpp"
 
 #include "StelTexture.hpp"
 #include "StelPainter.hpp"
@@ -63,6 +65,7 @@ Constellation::~Constellation()
 
 bool Constellation::read(const QJsonObject& data, StarMgr *starMgr, const bool preferNativeName)
 {
+	static NebulaMgr *nebulaMgr=GETSTELMODULE(NebulaMgr);
 	const auto id = data["id"].toString();
 	const auto idParts = id.split(" ");
 	if (idParts.size() == 3 && idParts[0] == "CON")
@@ -150,18 +153,33 @@ bool Constellation::read(const QJsonObject& data, StarMgr *starMgr, const bool p
 		for (qsizetype i = 0; i < hullExtraArray.size(); ++i)
 		{
 			const StarId HP = StelUtils::getLongLong(hullExtraArray[i]);
-			if (HP == 0)
+			if (HP > 0)
 			{
-				qWarning().nospace() << "Error in hull_extension for constellation " << abbreviation << ": bad StarId " << HP;
-				return false;
+				const StelObjectP newStar = HP <= NR_OF_HIP ? starMgr->searchHP(HP)
+									    : starMgr->searchGaia(HP);
+				if (!newStar)
+				{
+					qWarning().nospace() << "Error in hull_extension for constellation " << abbreviation << ": can't find StarId " << HP << "... skipping";
+				}
+				else
+					hullExtension.push_back(newStar);
 			}
-			const StelObjectP newPoint = HP <= NR_OF_HIP ? starMgr->searchHP(HP)
-								     : starMgr->searchGaia(HP);
-			if (!newPoint)
-			{
-				qWarning().nospace() << "Error in hull_extension for constellation " << abbreviation << ": can't find StarId " << HP;
-				return false;
-			}
+			else // string with "DSO:..."?
+				if (hullExtraArray[i].isString() && hullExtraArray[i].toString().startsWith("DSO:"))
+				{
+					QString DSOname=hullExtraArray[i].toString().remove(0,4);
+					const StelObjectP newDSO = nebulaMgr->searchByID(DSOname);
+					if (!newDSO)
+					{
+						qWarning().nospace() << "Error in hull_extension for constellation " << abbreviation << ": can't find DSO " << DSOname << "... skipping";
+					}
+					else
+						hullExtension.push_back(newDSO);
+				}
+				else
+				{
+					qWarning().nospace() << "Error in hull_extension for constellation " << abbreviation << ": bad element: " << hullExtraArray[i].toString() << "... skipping";
+				}
 		}
 	}
 	double hullRadius=data["hull_radius"].toDouble(data["single_star_radius"].toDouble(0.5));
