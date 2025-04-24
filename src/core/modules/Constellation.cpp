@@ -59,8 +59,6 @@ Constellation::Constellation()
 
 Constellation::~Constellation()
 {
-	if (convexHull)
-		delete convexHull.data();
 }
 
 bool Constellation::read(const QJsonObject& data, StarMgr *starMgr, const bool preferNativeName)
