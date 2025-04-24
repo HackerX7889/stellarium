@@ -190,7 +190,7 @@ protected:
 
 	void searchAround(const StelCore* core, int index, const Vec3d &v, const double withParallax, 
 					  const Vec3d diffPos, double cosLimFov, QList<StelObjectP > &result) override;
-	virtual void searchWithin(const StelCore* core, int index, const SphericalRegionP region, const double withParallax, const Vec3d diffPos, const bool hipOnly,
+	void searchWithin(const StelCore* core, int index, const SphericalRegionP region, const double withParallax, const Vec3d diffPos, const bool hipOnly,
 				  QList<StelObjectP > &result) override;
 	StelObjectP searchGaiaID(int index, const StarId source_id, int& matched) const override;
  	void searchGaiaIDepochPos(const StarId source_id, float dyrs,
