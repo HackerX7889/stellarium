@@ -614,9 +614,15 @@ void SpecialZoneArray<Star>::searchWithin(const StelCore* core, int index, const
 		}
 		if (region->contains(tmp))
 		{
-			// TODO: do not select stars that are too faint to display
-			result.push_back(s->createStelObject(this,z));
+			qDebug() << "Region match: " <<  s->getHip() << "(Index:" << index << ")";
+			// Exclude non-HIP?
+			if (hipOnly && s->getHip()==0)
+				continue;
+			else
+				result.push_back(s->createStelObject(this,z));
 		}
+		else
+			qDebug() << "NO Region match: " <<  s->getHip() << "(Index:" << index << ")";
 	}
 }
 

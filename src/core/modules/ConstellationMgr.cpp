@@ -1463,7 +1463,7 @@ void ConstellationMgr::starsInHullOf(const QString &englishName) const
 
 	//SphericalRegionP region=constell->convexHull;
 	//QList<StelObjectP> starList=GETSTELMODULE(StarMgr)->searchWithin(qobject_cast<Constellation>(constell)->convexHull, core, true);
-	QList<StelObjectP> starList=GETSTELMODULE(StarMgr)->searchWithin(constell->getRegion(), core, false);
+	QList<StelObjectP> starList=GETSTELMODULE(StarMgr)->searchWithin(constell->getRegion(), core, true);
 	qInfo() << "Stars within the convex hull of" << englishName;
 	foreach(const auto &star, starList)
 	{
