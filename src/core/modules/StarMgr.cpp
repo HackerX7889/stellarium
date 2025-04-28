@@ -1525,14 +1525,16 @@ QList<StelObjectP > StarMgr::searchAround(const Vec3d& vv, double limFov, const 
 }
 
 // Return a QList containing the stars located
-// inside the limFov circle around position vv (in J2000 frame without aberration)
+// within region (in J2000 frame without aberration)
 QList<StelObjectP > StarMgr::searchWithin(const SphericalRegionP region, const StelCore* core, const bool hipOnly) const
 {
 	QList<StelObjectP > result;
 	if (!getFlagStars())
 		return result;
 
-	const GeodesicSearchResult* geodesic_search_result = core->getGeodesicGrid(lastMaxSearchLevel)->search(region->getBoundingSphericalCaps(),lastMaxSearchLevel);
+	qDebug() << "maxGeodesicGridLevel (should be 8):" << maxGeodesicGridLevel << ", " << gridLevels << "gridLevels";
+
+	const GeodesicSearchResult* geodesic_search_result = core->getGeodesicGrid(maxGeodesicGridLevel)->search(region->getBoundingSphericalCaps(),maxGeodesicGridLevel);
 
 
 	double withParallax = core->getUseParallax() * core->getParallaxFactor();
@@ -1544,20 +1546,22 @@ QList<StelObjectP > StarMgr::searchWithin(const SphericalRegionP region, const S
 	// Iterate over the stars inside the triangles
 	for (auto* z : gridLevels)
 	{
-		//qDebug() << "search inside(" << it->first << "):";
+		qDebug() << "Level:" << z->level << z->fname << z->mag_min;
+		//qDebug() << "search inside(" << z->first << "):";
 		int zone;
-		for (GeodesicSearchInsideIterator it1(*geodesic_search_result,z->level);(zone = it1.next()) >= 0;)
+		for (GeodesicSearchInsideIterator it(*geodesic_search_result,z->level);(zone = it.next()) >= 0;)
 		{
+			qDebug() << "Zone " << zone;
 			z->searchWithin(core, zone, region, withParallax, diffPos, hipOnly, result);
-			//qDebug() << " " << zone;
 		}
 		//qDebug() << StelUtils::getEndLineChar() << "search border(" << it->first << "):";
-		for (GeodesicSearchInsideIterator it1(*geodesic_search_result,z->level);(zone = it1.next()) >= 0;)
+		for (GeodesicSearchBorderIterator it(*geodesic_search_result,z->level);(zone = it.next()) >= 0;)
 		{
+			qDebug() << "Border " << zone;
 			z->searchWithin(core, zone, region, withParallax, diffPos, hipOnly, result);
-			//qDebug() << " " << zone;
 		}
 		// always search the last zone because it is a global zone
+		qDebug() << "Global " << zone << "20<<(z->level<<1)=" << (20<<(z->level<<1));
 		z->searchWithin(core, (20<<(z->level<<1)), region, withParallax, diffPos, hipOnly, result);
 	}
 	qInfo() << "Region contains" << result.length() << "entries";

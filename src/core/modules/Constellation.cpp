@@ -372,6 +372,25 @@ void Constellation::drawBoundaryOptim(StelPainter& sPainter, const Vec3d& obsVel
 	{
 		sPainter.setColor(boundaryColor*1.7, boundaryFader.getInterstate());
 		sPainter.drawSphericalRegion(convexHull.data(), StelPainter::SphericalPolygonDrawModeBoundary);
+
+		// DEBUG: Paint hulls' getBoundingSphericalCaps(). It seems it's one cap anyhow, but what defines it?
+		const QList<SphericalCap> &caps= convexHull->getBoundingSphericalCaps();
+		sPainter.setColor(1., 1., 0., boundaryFader.getInterstate());
+		foreach(const SphericalCap &cap, caps)
+		{
+			//sPainter.drawSphericalRegion(cap.getBoundingCap().getClosedOutlineContour(), StelPainter::SphericalPolygonDrawModeBoundary);
+
+			QList<Vec3d> contour=cap.getClosedOutlineContour();
+			contour.append(contour.at(0)); // close loop
+			QList<Vec4f> colors;
+			for (int i=0; i<contour.length(); ++i)
+			{
+				colors.append(Vec4f(1., 1., 0., boundaryFader.getInterstate()));
+			}
+			sPainter.drawPath(contour, colors);
+		}
+
+
 	}
 }
 
